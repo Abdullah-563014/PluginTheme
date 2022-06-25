@@ -1,0 +1,17 @@
+{
+  "name": "PluginTheme website scrapping",
+  "version": "1.0.0",
+  "description": "PluginTheme website scrapping script.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "puppeteer": "^13.6.0"
+  }
+}
