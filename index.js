@@ -38,29 +38,29 @@ async function main() {
 
 
 
-
-
-
-
     const pageInfo = await page.evaluate(async () => {
         const products = document.querySelectorAll(".products .product-small+.product");
-
-        
-
-       
-
-writeDataToCsv();
-
-
+        for (let i = 0; i< products.length; i++) {
+          const singleProduct = products[i];
+          const category = singleProduct.querySelector(".category").innerText;
+          const imageUrl = singleProduct.querySelector(".box-image img.attachment-woocommerce_thumbnail").src;
+          const title = singleProduct.querySelector("p.product-title a").innerText;
+          const rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
+          if(priceRoot.length) {
+            try {
+              const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount+.amount");
+              const originalPrice = priceRoot[0].innerText;
+              const discountedPrice = priceRoot[1].innerText;
+            } catch(e) {
+              console.log(e);
+            }
+          }
+        }
 
     });
 
 
-
-
-
-
-
+    writeDataToCsv();
     
     await page.screenshot({
         path: "./screenshot.png",
@@ -70,43 +70,42 @@ writeDataToCsv();
     // await browser.close();
 }
 
-// writeDataToCsv();
 main();
 
 
 
 
 function writeDataToCsv() {
-const csvWriter = createCsvWriter({
-  path: 'out.csv',
-  header: [
-    {id: 'name', title: 'Name'},
-    {id: 'surname', title: 'Surname'},
-    {id: 'age', title: 'Age'},
-    {id: 'gender', title: 'Gender'},
-  ]
-});
+  const csvWriter = createCsvWriter({
+    path: 'out.csv',
+    header: [
+      {id: 'name', title: 'Name'},
+      {id: 'surname', title: 'Surname'},
+      {id: 'age', title: 'Age'},
+      {id: 'gender', title: 'Gender'},
+    ]
+  });
 
-const data = [
-  {
-    name: 'John',
-    surname: 'Snow',
-    age: 26,
-    gender: 'M'
-  }, {
-    name: 'Clair',
-    surname: 'White',
-    age: 33,
-    gender: 'F',
-  }, {
-    name: 'Fancy',
-    surname: 'Brown',
-    age: 78,
-    gender: 'F'
-  }
-];
+  const data = [
+    {
+      name: 'John',
+      surname: 'Snow',
+      age: 26,
+      gender: 'M'
+    }, {
+      name: 'Clair',
+      surname: 'White',
+      age: 33,
+      gender: 'F',
+    }, {
+      name: 'Fancy',
+      surname: 'Brown',
+      age: 78,
+      gender: 'F'
+    }
+  ];
 
-csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+  csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
 
 }
 
