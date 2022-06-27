@@ -15,14 +15,14 @@ const cookies = [
 ];
 
 
-
+  // let allInfo = [];
 
 
 async function main() {
     const browser = await puppeteer.launch({
-         headless: false ,
-         product: 'chrome',
-        });
+        headless: false ,
+        product: 'chrome',
+    });
     const page = await browser.newPage();
     await page.setViewport({ width: 1800, height: 700 });
     await page.setCookie(...cookies);
@@ -39,28 +39,49 @@ async function main() {
 
 
     const pageInfo = await page.evaluate(async () => {
+      let allInfo = [];
+
         const products = document.querySelectorAll(".products .product-small+.product");
         for (let i = 0; i< products.length; i++) {
           const singleProduct = products[i];
           const category = singleProduct.querySelector(".category").innerText;
           const imageUrl = singleProduct.querySelector(".box-image img.attachment-woocommerce_thumbnail").src;
           const title = singleProduct.querySelector("p.product-title a").innerText;
-          const rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
-          if(priceRoot.length) {
-            try {
-              const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount+.amount");
-              const originalPrice = priceRoot[0].innerText;
-              const discountedPrice = priceRoot[1].innerText;
-            } catch(e) {
-              console.log(e);
-            }
+          let rating;
+          let originalPrice;
+          let discountedPrice;
+          try {
+            rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
+            const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount");
+            originalPrice = priceRoot[0].innerText;
+            discountedPrice = priceRoot[1].innerText;
+          } catch(e) {
+            console.log(e.message);
           }
+          const singleInfo = {
+            category: category,
+            imageUrl: imageUrl,
+            title: title,
+            rating: rating,
+            originalPrice: originalPrice ? originalPrice : "0",
+            discountedPrice: discountedPrice ? discountedPrice : "0"
+          };
+          allInfo.push(singleInfo);
         }
+
+        
+
+        return allInfo;
+
+
+        
 
     });
 
 
-    writeDataToCsv();
+    console.log(pageInfo);
+
+    // writeDataToCsv();
     
     await page.screenshot({
         path: "./screenshot.png",
@@ -75,39 +96,39 @@ main();
 
 
 
-function writeDataToCsv() {
-  const csvWriter = createCsvWriter({
-    path: 'out.csv',
-    header: [
-      {id: 'name', title: 'Name'},
-      {id: 'surname', title: 'Surname'},
-      {id: 'age', title: 'Age'},
-      {id: 'gender', title: 'Gender'},
-    ]
-  });
+// function writeDataToCsv() {
+//   const csvWriter = createCsvWriter({
+//     path: 'out.csv',
+//     header: [
+//       {id: 'name', title: 'Name'},
+//       {id: 'surname', title: 'Surname'},
+//       {id: 'age', title: 'Age'},
+//       {id: 'gender', title: 'Gender'},
+//     ]
+//   });
 
-  const data = [
-    {
-      name: 'John',
-      surname: 'Snow',
-      age: 26,
-      gender: 'M'
-    }, {
-      name: 'Clair',
-      surname: 'White',
-      age: 33,
-      gender: 'F',
-    }, {
-      name: 'Fancy',
-      surname: 'Brown',
-      age: 78,
-      gender: 'F'
-    }
-  ];
+//   const data = [
+//     {
+//       name: 'John',
+//       surname: 'Snow',
+//       age: 26,
+//       gender: 'M'
+//     }, {
+//       name: 'Clair',
+//       surname: 'White',
+//       age: 33,
+//       gender: 'F',
+//     }, {
+//       name: 'Fancy',
+//       surname: 'Brown',
+//       age: 78,
+//       gender: 'F'
+//     }
+//   ];
 
-  csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+//   csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
 
-}
+// }
 
 
 
