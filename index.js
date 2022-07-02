@@ -50,6 +50,8 @@ async function startScrapping() {
     }
     console.log(pageInfo);
 
+    writeDataToCsv(pageInfo);
+
     // writeDataToCsv();
     
     await page.screenshot({
@@ -163,39 +165,28 @@ async function loadProductDetailsPageAndGetInfo(pageUrl) {
 
 
 
-// function writeDataToCsv() {
-//   const csvWriter = createCsvWriter({
-//     path: 'out.csv',
-//     header: [
-//       {id: 'name', title: 'Name'},
-//       {id: 'surname', title: 'Surname'},
-//       {id: 'age', title: 'Age'},
-//       {id: 'gender', title: 'Gender'},
-//     ]
-//   });
+function writeDataToCsv(targetData) {
+  const csvWriter = createCsvWriter({
+    path: 'out.csv',
+    header: [
+      {id: 'category', title: 'Category'},
+      {id: 'imageUrl', title: 'ImageUrl'},
+      {id: 'productDetailsUrl', title: 'ProductDetailsUrl'},
+      {id: 'title', title: 'Title'},
+      {id: 'originalPrice', title: 'OriginalPrice'},
+      {id: 'discountedPrice', title: 'DiscountedPrice'},
+      {id: 'shortTitle', title: 'ShortTitle'},
+      {id: 'downloadLink', title: 'DownloadLink'},
+      {id: 'shortDescription', title: 'ShortDescription'},
+      {id: 'lognDescription', title: 'LognDescription'},
+    ]
+  });
 
-//   const data = [
-//     {
-//       name: 'John',
-//       surname: 'Snow',
-//       age: 26,
-//       gender: 'M'
-//     }, {
-//       name: 'Clair',
-//       surname: 'White',
-//       age: 33,
-//       gender: 'F',
-//     }, {
-//       name: 'Fancy',
-//       surname: 'Brown',
-//       age: 78,
-//       gender: 'F'
-//     }
-//   ];
+  const data = [targetData];
 
-//   csvWriter.writeRecords(data).then(()=> console.log('The CSV file was written successfully'));
+  csvWriter.writeRecords(targetData).then(()=> console.log('The CSV file was written successfully'));
 
-// }
+}
 
 
 
