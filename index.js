@@ -15,71 +15,57 @@ const cookies = [
 ];
 
 
-  // let allInfo = [];
+let allData = [];
+var page;
 
+startScrapping();
 
-async function main() {
+async function startScrapping() {
     const browser = await puppeteer.launch({
         headless: false ,
         product: 'chrome',
     });
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setViewport({ width: 1800, height: 700 });
     await page.setCookie(...cookies);
 
 
 
 
-    await page.goto(wordpressThemePage, {
-        timeout: 900000,
-        waitUntil: 'networkidle0',
-    });
+
+    let pageInfo = await loadProductListingPageAndGetInfo(wordpressThemePage);
+
+    console.log("==================================================");
+    console.log("==================================================");
+    console.log("==================================================");
+    allData.push(...pageInfo);
+    allData.pop();
 
 
+    // const sleep = ms => {
+    //   return new Promise(resolve => setTimeout(resolve, ms))
+    // }
 
+    // const getNumFruit = index => {
+    //   return sleep(100).then(v => pageInfo[index])
+    // }
 
-    const pageInfo = await page.evaluate(async () => {
-      let allInfo = [];
+    // if(pageInfo.length) {
+    //   for(let i =0; i <pageInfo.length-1; i++) {
+    //     let info = await getNumFruit(i)
+    //     console.log(info);
+    //     console.log(i+" :=====================================================");
+    //   }
+    // }
 
-        const products = document.querySelectorAll(".products .product-small+.product");
-        for (let i = 0; i< products.length; i++) {
-          const singleProduct = products[i];
-          const category = singleProduct.querySelector(".category").innerText;
-          const imageUrl = singleProduct.querySelector(".box-image img.attachment-woocommerce_thumbnail").src;
-          const title = singleProduct.querySelector("p.product-title a").innerText;
-          let rating;
-          let originalPrice;
-          let discountedPrice;
-          try {
-            rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
-            const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount");
-            originalPrice = priceRoot[0].innerText;
-            discountedPrice = priceRoot[1].innerText;
-          } catch(e) {
-            console.log(e.message);
-          }
-          const singleInfo = {
-            category: category,
-            imageUrl: imageUrl,
-            title: title,
-            rating: rating,
-            originalPrice: originalPrice ? originalPrice : "0",
-            discountedPrice: discountedPrice ? discountedPrice : "0"
-          };
-          allInfo.push(singleInfo);
-        }
-
-        
-
-        return allInfo;
-
-
-        
-
-    });
-
-
-    console.log(pageInfo);
+    if(pageInfo.length) {
+      for(let i =0; i <pageInfo.length-1; i++) {
+        let info = await getNumFruit(i)
+        console.log(info);
+        console.log(i+" :=====================================================");
+      }
+    }
+    // console.log(pageInfo);
 
     // writeDataToCsv();
     
@@ -91,7 +77,136 @@ async function main() {
     // await browser.close();
 }
 
-main();
+
+async function loadProductListingPageAndGetInfo(pageUrl) {
+  
+  await page.goto(pageUrl, {
+      timeout: 900000,
+      waitUntil: 'networkidle0',
+  });
+
+  const pageInfo = await page.evaluate(async () => {
+    let allInfo = [];
+
+    const products = document.querySelectorAll(".products .product-small+.product");
+    for (let i = 0; i< products.length; i++) {
+      const singleProduct = products[i];
+      const category = singleProduct.querySelector(".category").innerText;
+      const imageUrl = singleProduct.querySelector(".box-image img.attachment-woocommerce_thumbnail").src;
+      const productDetailsUrl = singleProduct.querySelector(".box-image a").href;
+      const title = singleProduct.querySelector("p.product-title a").innerText;
+      let rating;
+      let originalPrice;
+      let discountedPrice;
+      try {
+        rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
+        const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount");
+        originalPrice = priceRoot[0].innerText;
+        discountedPrice = priceRoot[1].innerText;
+      } catch(e) {
+        console.log(e.message);
+      }
+      const singleInfo = {
+        category: category,
+        imageUrl: imageUrl,
+        productDetailsUrl: productDetailsUrl,
+        title: title,
+        rating: rating,
+        originalPrice: originalPrice ? originalPrice : "0",
+        discountedPrice: discountedPrice ? discountedPrice : "0"
+      };
+      allInfo.push(singleInfo);
+    }
+
+    
+
+    let isAvailableNextPage = document.querySelector("a.next.page-number");
+    if(isAvailableNextPage) {
+      allInfo.push({
+        status: true,
+        link: isAvailableNextPage.href
+      });
+    } else {
+      allInfo.push({
+        status: false,
+        link: ""
+      });
+    }
+    return allInfo;
+
+
+      
+
+  });
+
+  return pageInfo;
+}
+
+
+async function loadProductDetailsPageAndGetInfo(pageUrl) {
+  
+  await page.goto(pageUrl, {
+      timeout: 900000,
+      waitUntil: 'networkidle0',
+  });
+
+  const pageInfo = await page.evaluate(async () => {
+    let allInfo = [];
+
+    const products = document.querySelectorAll(".products .product-small+.product");
+    for (let i = 0; i< products.length; i++) {
+      const singleProduct = products[i];
+      const category = singleProduct.querySelector(".category").innerText;
+      const imageUrl = singleProduct.querySelector(".box-image img.attachment-woocommerce_thumbnail").src;
+      const title = singleProduct.querySelector("p.product-title a").innerText;
+      let rating;
+      let originalPrice;
+      let discountedPrice;
+      try {
+        rating = singleProduct.querySelector(".price-wrapper .rating").innerText;
+        const priceRoot = singleProduct.querySelectorAll(".price-wrapper .price .woocommerce-Price-amount");
+        originalPrice = priceRoot[0].innerText;
+        discountedPrice = priceRoot[1].innerText;
+      } catch(e) {
+        console.log(e.message);
+      }
+      const singleInfo = {
+        category: category,
+        imageUrl: imageUrl,
+        productDetailsUrl: productDetailsUrl ? productDetailsUrl : "",
+        title: title,
+        rating: rating,
+        originalPrice: originalPrice ? originalPrice : "0",
+        discountedPrice: discountedPrice ? discountedPrice : "0"
+      };
+      allInfo.push(singleInfo);
+    }
+
+    
+
+    let isAvailableNextPage = document.querySelector("a.next.page-number");
+    if(isAvailableNextPage) {
+      allInfo.push({
+        status: true,
+        link: isAvailableNextPage.href
+      });
+    } else {
+      allInfo.push({
+        status: false,
+        link: ""
+      });
+    }
+    return allInfo;
+
+
+      
+
+  });
+
+  return pageInfo;
+}
+
+
 
 
 
