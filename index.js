@@ -3,7 +3,7 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
-let wordpressThemePage="https://plugintheme.net/product-category/wordpress-themes/";
+let wordpressThemePage="https://plugintheme.net/product-category/woocommerce-themes/";
 
 const cookies = [
     {
@@ -184,7 +184,7 @@ async function loadProductDetailsPageAndGetInfo(pageUrl) {
 
 function writeDataToCsv(targetData) {
   const csvWriter = createCsvWriter({
-    path: 'out.csv',
+    path: 'woocommerce_themes.csv',
     header: [
       {id: 'category', title: 'Category'},
       {id: 'imageUrl', title: 'ImageUrl'},
