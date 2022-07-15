@@ -3,12 +3,12 @@ const fs = require('fs');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
-const wordpressThemePage="https://plugintheme.net/product-category/wordpress-themes/";
+let wordpressThemePage="https://plugintheme.net/product-category/wordpress-themes/";
 
 const cookies = [
     {
         'name': 'wordpress_logged_in_6e6b7bea34744ce4fa04edb11e766e6c',
-        'value': 'oneurself200%40gmail.com%7C1657360290%7Cbmy606TSCdw4tSVZHC14QKZGziqL2o2Oz1u4sQoQlI7%7Ca3d6aeca6004f9a83929e90f87fc4a2e4af54d7e9a9c7380f6205ceceea37ce5',
+        'value': 'oneurself200%40gmail.com%7C1658735874%7Cm8pO3dxG2ttN9HoLDEJRcLekNX9MhE30lGB2lpEucJR%7Cb5789e1ea1d6ab52384bcfd4cd91ebebcfb26f4a5a467dd9758d6bd92da3c904',
         'domain': 'plugintheme.net',
         'path': '/'
     }
@@ -18,9 +18,11 @@ const cookies = [
 let allData = [];
 var page;
 
-startScrapping();
+initAll();
 
-async function startScrapping() {
+
+
+async function initAll() {
     const browser = await puppeteer.launch({
         headless: false ,
         product: 'chrome',
@@ -29,6 +31,10 @@ async function startScrapping() {
     await page.setViewport({ width: 1800, height: 700 });
     await page.setCookie(...cookies);
 
+    await startScrapping();
+}
+
+async function startScrapping() {
 
     let pageInfo = await loadProductListingPageAndGetInfo(wordpressThemePage);
 
@@ -43,16 +49,24 @@ async function startScrapping() {
       for(let i =0; i <pageInfo.length-1; i++) {
         let info = await loadProductDetailsPageAndGetInfo(pageInfo[i].productDetailsUrl);
         pageInfo[i].shortTitle = info.shortTitle;
+        pageInfo[i].demoLink = info.demoLink;
         pageInfo[i].downloadLink = info.downloadLink;
         pageInfo[i].shortDescription = info.shortDescription;
         pageInfo[i].lognDescription = info.lognDescription;
       }
     }
     console.log(pageInfo);
+    if (pageInfo[pageInfo.length - 1].status) {
+      wordpressThemePage = pageInfo[pageInfo.length - 1].link;
+      startScrapping();
+      // await startScrapping();
+      return;
+    }
 
-    writeDataToCsv(pageInfo);
-
-    // writeDataToCsv();
+    console.log(`total data size is:- ${allData.length}========================================================`);
+    console.log(`total data size is:- ${allData.length}========================================================`);
+    console.log(`total data size is:- ${allData.length}========================================================`);
+    writeDataToCsv(allData);
     
     await page.screenshot({
         path: "./screenshot.png",
@@ -135,11 +149,13 @@ async function loadProductDetailsPageAndGetInfo(pageUrl) {
 
     let shortTitle = "";
     let shortDescription = "";
+    let demoLink = "";
     let downloadLink = "";
     let lognDescription = "";
     try {
       shortTitle = document.querySelector(".product-title").innerText;
       shortDescription = document.querySelector(".product-short-description ul").outerHTML;
+      demoLink = document.querySelector(".product-short-description a.grey-link").href;
       downloadLink = document.querySelector(".product-short-description a.red-link").href;
       if(document.getElementById("tab-description")) {
         lognDescription = document.getElementById("tab-description").innerHTML;
@@ -150,6 +166,7 @@ async function loadProductDetailsPageAndGetInfo(pageUrl) {
     const details = {
       shortTitle: shortTitle ? shortTitle : "",
       shortDescription: shortDescription ? shortDescription : "",
+      demoLink: demoLink ? demoLink : "",
       downloadLink: downloadLink ? downloadLink : "",
       lognDescription: lognDescription ? lognDescription : "",
     };
@@ -176,6 +193,7 @@ function writeDataToCsv(targetData) {
       {id: 'originalPrice', title: 'OriginalPrice'},
       {id: 'discountedPrice', title: 'DiscountedPrice'},
       {id: 'shortTitle', title: 'ShortTitle'},
+      {id: 'demoLink', title: 'DemoLink'},
       {id: 'downloadLink', title: 'DownloadLink'},
       {id: 'shortDescription', title: 'ShortDescription'},
       {id: 'lognDescription', title: 'LognDescription'},
